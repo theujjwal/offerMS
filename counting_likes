@@ -1,0 +1,65 @@
+=========================================================================================================================
+	To Implements this feature
+	make sure you have same POJO classes
+	as Offer Microservice have, i.e. Offer, Like
+	
+	Just: Copy Offer and Like (remove all JPA related annotations) 
+=========================================================================================================================
+		In Service class of Points Microservice
+	---------------------------------------------------------
+	
+	/*  PRIVATE UTILITY METHOD  */
+	private long numberOfLikesInFirstTwoDays(Offer offer) {
+		if (offer != null) {
+			List<Like> likes = offer.getLikes();
+			LocalDate startDate = offer.getCreatedAt();
+			LocalDate endDate = startDate.plusDays(2);
+			long count = countLikesInBetween(startDate, endDate, likes);
+			return count;
+		}
+		return -1;
+	}
+
+	/*  PRIVATE UTILITY METHOD  */
+	private long numberOfLikesInLastTwoDays(Offer offer) {
+		if (offer != null) {
+			List<Like> likes = offer.getLikes();
+			LocalDate endDate = LocalDate.now();
+			LocalDate startDate = endDate.minusDays(2);
+			long count = countLikesInBetween(startDate, endDate, likes);
+			return count;
+		}
+		return -1;
+	}
+	
+	/*  PRIVATE UTILITY METHOD  */
+	private long countLikesInBetween(LocalDate startDate, LocalDate endDate, List<Like> likes) {
+		return likes.stream()
+				.filter(like -> like.getLikedDate().isAfter(startDate) && like.getLikedDate().isBefore(endDate))
+				.count();
+	}
+		
+	/*  PUBLIC BUSINESS LOGIC IMPLEMENTED METHOD  */
+	public int calculatePointsOfEmployee(String empId) {
+		List<Offer> offers = ...REST CALL TO OMS (get all offers created by empId)....;
+		int points = 0;
+		for (Offer o : offers) {
+			long n = numberOfLikesInFirstTwoDays(o);
+
+			if (n >= 100) {
+				points += 50;				// Rule #1
+			} else if (n >= 50) {
+				points += 10;				// Rule #2
+			}
+			// calculate engaged date
+			LocalDate start = o.getCreatedAt();
+			LocalDate end = o.getClosedAt();
+			// if end - start <= 2 days
+			Period period = Period.between(start, end);
+			if (p.getDays() <= 2){
+				points += 100;				// Rule #3
+			}
+		}
+		return points;
+	}
+=========================================================================================================================
